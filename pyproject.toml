@@ -30,7 +30,7 @@ preview = true
 quote-style = 'single'
 
 [tool.pytest.ini_options]
-pythonpath = "."
+pythonpath = '.'
 addopts = '-p no:warnings'
 
 [tool.taskipy.tasks]

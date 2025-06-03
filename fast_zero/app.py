@@ -1,8 +1,27 @@
+from http import HTTPStatus
+
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+
+from fast_zero.schemas import Message
 
 app = FastAPI()
 
 
-@app.get('/')
+@app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
     return {'message': 'Ola mundo!'}
+
+
+@app.get('/html', status_code=HTTPStatus.OK, response_class=HTMLResponse)
+def read_root_html():
+    return """
+    <html>
+        <head>
+            <title>Exemplo de HTML Response</title>
+        </head>
+        <body>
+            <h1>Ola mundo!</h1>
+        </body>
+    </html>
+    """
