@@ -13,7 +13,7 @@ from fast_zero.schemas import (
 
 app = FastAPI()
 
-# * Database fake para testes
+# * Temporary database
 fake_database = []
 
 
@@ -71,11 +71,23 @@ def delete_user(user_id: int):
             status_code=HTTPStatus.NOT_FOUND,
             detail='User not found',
         )
-    fake_database.pop(user_id - 1)
+    del fake_database[user_id - 1]
     return {'message': 'User deleted successfully'}
 
 
-# * Returns fake database for testing purposes
+@app.get(
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
+)
+def read_user(user_id: int):
+    if user_id > len(fake_database) or user_id < 1:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='User not found',
+        )
+    return fake_database[user_id - 1]
+
+
+# * Returns tempory database for testing purposes
 @app.get('/database/', status_code=HTTPStatus.OK, response_model=list[UserDB])
 def get_database():
     return fake_database

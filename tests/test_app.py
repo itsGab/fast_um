@@ -42,6 +42,25 @@ def test_read_users(client):
         assert 'password' not in user  # password should not be returned
 
 
+def test_read_user_sucess(client):
+    test_id = 1
+    response = client.get(f'/users/{test_id}')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['user_id'] == test_id
+    assert response.json()['username'] == 'testuser'
+    assert response.json()['email'] == 'test@mail.com'
+
+
+# TODO: fixit!!!
+# ! soh esta verificando se o falha no id menor que 1,
+# ! mas deveria verificar id maior que len(fake_database).
+def test_read_user_failure_id(client):
+    test_id = 0
+    response = client.get(f'/users/{test_id}')
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
+
+
 def test_update_user_sucess(client):
     user_data_update = {
         'username': 'updateduser',
@@ -55,6 +74,9 @@ def test_update_user_sucess(client):
     assert response.json()['email'] == user_data_update['email']
 
 
+# TODO: fixit!!!
+# ! soh esta verificando se o falha no id menor que 1,
+# ! mas deveria verificar id maior que len(fake_database).
 def test_update_user_failure_id(client):
     user_data_update = {
         'username': 'updateduser',
@@ -67,7 +89,6 @@ def test_update_user_failure_id(client):
     assert response.json() == {'detail': 'User not found'}
 
 
-# TODO: Implementar testes para update e delete
 def test_delete_user_sucess(client):
     test_id = 1
     response = client.delete(f'/users/{test_id}')
@@ -81,6 +102,9 @@ def test_delete_user_sucess(client):
         assert user['user_id'] != test_id
 
 
+# TODO: fixit!!!
+# ! soh esta verificando se o falha no id menor que 1,
+# ! mas deveria verificar id maior que len(fake_database).
 def test_delete_user_failure_id(client):
     test_id = 0
     response = client.delete(f'/users/{test_id}')
