@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class Message(BaseModel):
@@ -16,21 +16,17 @@ class UserSchema(UserBasic):
 
 
 class UserPublic(UserBasic):
-    user_id: int
+    id: int
+    model_config = ConfigDict(from_attributes=True)
 
 
-"""
-# TODO: Analisar essa sugestao do copilot.
-    class Config:
+""" # * tem o mesmo efeito do ConfigDict(from_attributes=True)
+    class Config: # tem o mesmo efeito do from_attributes=True
         orm_mode = True
         # Permite que o Pydantic converta modelos ORM para dicionários
         # Isso é útil quando você está usando ORMs como SQLAlchemy e deseja
         # retornar modelos Pydantic a partir de instâncias de modelo ORM.
 """
-
-
-class UserDB(UserSchema):
-    user_id: int
 
 
 class UserPublicList(BaseModel):
