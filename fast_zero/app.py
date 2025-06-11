@@ -17,10 +17,6 @@ from fast_zero.schemas import (
 
 app = FastAPI()
 
-# ! Remove fake db, but first fix get user by id
-# * Temporary database
-fake_database = []
-
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
@@ -41,6 +37,7 @@ def read_root_html():
     """
 
 
+# * Create, Read, Update, Delete (CRUD) operations for User model
 @app.post('/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_user(user: UserSchema, session: Session = Depends(get_session)):
     db_user = session.scalar(
@@ -118,14 +115,14 @@ def delete_user(user_id: int, session: Session = Depends(get_session)):
     return {'message': 'User deleted successfully'}
 
 
-# ! Fix get user by id & then remove fake db
 @app.get(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def read_user(user_id: int):
-    if user_id > len(fake_database) or user_id < 1:
+def read_user_by_id(user_id: int, session: Session = Depends(get_session)):
+    db_user = session.scalar(select(User).where(User.id == user_id))
+    if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail='User not found',
         )
-    return fake_database[user_id - 1]
+    return db_user

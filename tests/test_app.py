@@ -17,7 +17,7 @@ def test_read_root_html(client):
     assert '<title>Exemplo de HTML Response</title>' in response.text
 
 
-def test_create_user(client):
+def test_create_user_sucess(client):
     user_data = {
         'username': 'testuser',
         'email': 'test@mail.com',
@@ -28,6 +28,28 @@ def test_create_user(client):
     assert response.json()['username'] == user_data['username']
     assert response.json()['email'] == user_data['email']
     assert response.json()['id'] == 1
+
+
+def test_create_user_failure_username_exists(client, user):
+    same_username_data = {
+        'username': user.username,
+        'email': 'whatever@mail.com',
+        'password': 'whateverpwd',
+    }
+    response = client.post('/users/', json=same_username_data)
+    response.status_code == HTTPStatus.CONFLICT
+    response.json()['detail'] == 'Username or email already exists'
+
+
+def test_create_user_failure_email_exists(client, user):
+    same_email_data = {
+        'username': 'anotheruser',
+        'email': user.email,
+        'password': 'anotherpwd',
+    }
+    response = client.post('/users/', json=same_email_data)
+    response.status_code == HTTPStatus.CONFLICT
+    response.json()['detail'] == 'Username or email already exists'
 
 
 def test_read_users_empty(client):
@@ -43,24 +65,23 @@ def test_read_users_with_one_user(client, user):
     assert response.json() == {'users': [user_schema]}
 
 
-""" TODO: fixit!!!
-def test_read_user_sucess(client):
-    test_id = 1
-    response = client.get(f'/users/{test_id}')
+def test_read_user_by_id_success(client, user):
+    response = client.get('/users/1')
     assert response.status_code == HTTPStatus.OK
-    assert response.json()['id'] == test_id
-    assert response.json()['username'] == 'testuser'
-    assert response.json()['email'] == 'test@mail.com'
-"""
+    user_schema = UserPublic.model_validate(user).model_dump()
+    assert response.json() == user_schema
 
 
-""" TODO: fixit!!!
-def test_read_user_failure_id(client):
-    test_id = 0
-    response = client.get(f'/users/{test_id}')
+def test_read_user_by_id_failure_inexistent_id_999(client, user):
+    response = client.get('/users/999')
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
-"""
+
+
+def test_read_user_by_id_failure_inexistent_id_0(client, user):
+    response = client.get('/users/0')
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
 
 
 def test_update_user_sucess(client, user):
@@ -86,7 +107,6 @@ def test_update_integrity_error(client, user):
         'password': 'faustopwd',
     }
     client.post('/users/', json=fausto_data)
-
     # Alterando o user.username das fixture para "fausto"
     response_update = client.put(
         '/users/1',
@@ -102,18 +122,26 @@ def test_update_integrity_error(client, user):
     )
 
 
-""" TODO: fixit!!!
-def test_update_user_failure_id(client):
-    user_data_update = {
-        'username': 'updateduser',
-        'email': 'updated@mail.com',
-        'password': 'updatedpassword',
+def test_update_user_failure_inexistent_id_999(client, user):
+    update_data = {
+        'username': 'updateuser',
+        'email': 'update@mail.com',
+        'password': 'updatepwd',
     }
-    test_id = 0
-    response = client.put(f'/users/{test_id}', json=user_data_update)
+    response = client.put('/users/999', json=update_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
- """
+
+
+def test_update_user_failure_inexistent_id_0(client, user):
+    update_data = {
+        'username': 'updateuser',
+        'email': 'update@mail.com',
+        'password': 'updatepwd',
+    }
+    response = client.put('/users/0', json=update_data)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
 
 
 def test_delete_user_sucess(client, user):
@@ -125,10 +153,13 @@ def test_delete_user_sucess(client, user):
     assert response_db.json() == {'users': []}
 
 
-""" TODO: fixit!!!
-def test_delete_user_failure_id(client):
-    test_id = 0
-    response = client.delete(f'/users/{test_id}')
+def test_delete_user_failure_inexistent_id_999(client, user):
+    response = client.delete('/users/999')
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
-"""
+
+
+def test_delete_user_failure_inexistent_id_0(client, user):
+    response = client.delete('/users/0')
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}

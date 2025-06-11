@@ -5,7 +5,7 @@ class Message(BaseModel):
     message: str
 
 
-# TODO: Deveria fazer um UserBasic?
+# TODO: decidir usar 'UserBasic' ou refatora.
 class UserBasic(BaseModel):
     username: str
     email: EmailStr
